@@ -13,12 +13,20 @@ export default function App() {
   const[cvv, setCVV] = useState(0);
   const[senha, setSenha] = useState("");
 
+  function formatNumero(evento){
+    let numero = evento.target.value
+    let numeroFormatado = numero.replace(/\D/g, '') // Remove tudo que nao for número 
+    numeroFormatado = numeroFormatado.substring(0,16) // Limita a 16 Dígitos 
+    numeroFormatado = numeroFormatado.replace(/(\d{4})/g, '$1 ').trim() // Adiciona espaço a cada 4 digitos
+    setNumero(numeroFormatado)
+  }
+
   async function pagar(){
     if(!nome || !numero || !mes || !ano || !cvv || !senha){
       return toast.error("Preencher todos os campos")
     }
 
-    if(numero.length !== 16){
+    if(numero.replace(/\s/g, '').length !== 16){
       return toast.error("número do cartão inválido")
     }
     
@@ -42,7 +50,7 @@ export default function App() {
     try {
       const response = await instance.post("/creditcards", {
         name: nome,
-        number: numero,
+        number: numero.replace(/\s/g, ''),
         expiration: `${mes}/${ano}`,
         cvv: cvv,
         password: senha,
@@ -58,13 +66,14 @@ export default function App() {
       <ToastContainer 
        position="top-right" 
        autoClose={5000}
-       theme="colored" />
+       theme="colored" 
+       />
       <div className="w-[40%] relative h-full bg-[#271540]">
         <div className="absolute top-10 left-60">
-          <CardFront />
+          <CardFront nome={nome} numero={numero}/>
         </div>
         <div className="absolute top-95 left-80">
-          <BackCard />
+          <BackCard cvv={cvv}/>
         </div>
       </div>
       <div className="w-[60%] h-full flex items-end flex-col p-[40px]">
@@ -80,7 +89,8 @@ export default function App() {
             <label htmlFor="numero" className="text-[20px]">
             Número do Cartão</label>
             <input
-            onChange={(event) => setNumero(event.target.value)}
+            onChange={(event) => formatNumero(event)}
+            value={numero}
             type="text" className="w-full h-[40px] rounded-md bg-[#d9d9d9]" />
           </div>
           <div className="flex">
